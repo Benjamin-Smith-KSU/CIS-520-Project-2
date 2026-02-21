@@ -12,15 +12,13 @@
 
 // Add and comment your analysis code in this function.
 // THIS IS NOT FINISHED.
-int main(int argc, char **argv) 
-{
-	if (argc < 3) 
-	{
-		printf("%s <pcb file> <schedule algorithm> [quantum]\n", argv[0]);
-		return EXIT_FAILURE;
-	}
+int main(int argc, char **argv) {
+  if (argc < 3) {
+    printf("%s <pcb file> <schedule algorithm> [quantum]\n", argv[0]);
+    return EXIT_FAILURE;
+  }
 
-	abort();		// REPLACE ME with implementation.
+  abort(); // REPLACE ME with implementation.
 
-	return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
