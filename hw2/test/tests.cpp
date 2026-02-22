@@ -7,36 +7,40 @@
 // Using a C library requires extern "C" to prevent function mangling
 extern "C" {
 #include <dyn_array.h>
-#include <processing_scheduling.h>
 }
 
 #define NUM_PCB 30
 #define QUANTUM 5 // Used for Robin Round for process as the run time limit
 
-TEST(first_come_first_serve, BadParams){
-        ScheduleResult_t * result = malloc(sizeof(ScheduleResult_t));
+TEST(fcfs, BadParams){
+        ScheduleResult_t * result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
 
         dyn_array_t * queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
-        ASSERT_EQ(false, first_come_first_serve(queue, result)); // capacity == 0
+        bool res = first_come_first_serve(queue, result);
+        ASSERT_EQ(false, res); // capacity == 0
         dyn_array_destroy(queue);
 
         queue = dyn_array_create(NUM_PCB, 0, NULL);
-        ASSERT_EQ(false, first_come_first_serve(queue, result)); // data_size == 0
+        res = first_come_first_serve(queue, result);
+        ASSERT_EQ(false, res); // data_size == 0
         dyn_array_destroy(queue);
 
         queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
-        ASSERT_EQ(false, first_come_first_serve(NULL, result));
-        ASSERT_EQ(false, first_come_first_serve(queue, NULL));
+        res = first_come_first_serve(NULL, result);
+        ASSERT_EQ(false, res);
+        res = first_come_first_serve(queue, NULL);
+        ASSERT_EQ(false, res);
 
-        ASSERT_EQ(false, first_come_first_serve(queue, result)); // count == 0
+        res = first_come_first_serve(queue, result);
+        ASSERT_EQ(false, res); // count == 0
 
         dyn_array_destroy(queue);
         free(result);
 }
 
 
-TEST(first_come_first_serve, GoodParams){
-        ScheduleResult_t * result = malloc(sizeof(ScheduleResult_t));
+TEST(fcfs, GoodParams){
+        ScheduleResult_t * result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
         dyn_array_t * queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
 
         // given sorted
@@ -51,13 +55,13 @@ TEST(first_come_first_serve, GoodParams){
         }
         bool res = first_come_first_serve(queue, result);
         ASSERT_EQ(true, res);
-        ASSERT_EQ(20, result->average_waiting_time);// test avg waiting time
-        ASSERT_EQ(29, result->average_turnaround_time);// test avg turnaround time
-        ASSERT_EQ(91, result ->total_run_time);// test total run time
+        ASSERT_EQ(20.4f, result->average_waiting_time);// test avg waiting time
+        ASSERT_EQ(29.5f, result->average_turnaround_time);// test avg turnaround time
+        ASSERT_EQ(91UL, result ->total_run_time);// test total run time
         free(result);
         dyn_array_destroy(queue);
 
-        result = malloc(sizeof(ScheduleResult_t));
+        result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
         queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
 
         // given unsorted
@@ -79,12 +83,12 @@ TEST(first_come_first_serve, GoodParams){
 
                 dyn_array_push_front(queue, &block);
         }
-        bool res = first_come_first_serve(queue, result);
+        res = first_come_first_serve(queue, result);
 
         ASSERT_EQ(true, res);
-        ASSERT_EQ(20, result->average_waiting_time);// test avg waiting time
-        ASSERT_EQ(29, result->average_turnaround_time);// test avg turnaround time
-        ASSERT_EQ(91, result ->total_run_time);// test total run time
+        ASSERT_EQ(20.4f, result->average_waiting_time);// test avg waiting time
+        ASSERT_EQ(29.5f, result->average_turnaround_time);// test avg turnaround time
+        ASSERT_EQ(91UL, result ->total_run_time);// test total run time
         free(result);
         dyn_array_destroy(queue);
 

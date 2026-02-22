@@ -39,7 +39,7 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
 
 	float total_waiting_time = 0;
 	float total_turnaround_time = 0;
-	result.total_run_time = 0;
+	result->total_run_time = 0;
 	const size_t size = dyn_array_size(ready_queue);
 
 	size_t ind[size];
@@ -56,15 +56,15 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
 		ProcessControlBlock_t* block = dyn_array_at(ready_queue, ind[i]);
 		if (block == NULL) return false;
 
-		if (block->arrival > result.total_run_time) result.total_run_time = block->arrival;
-		total_waiting_time += (result.total_run_time - block->arrival);
+		if (block->arrival > result->total_run_time) result->total_run_time = block->arrival;
+		total_waiting_time += (result->total_run_time - block->arrival);
 
-		result.total_run_time += block->remaining_burst_time;
+		result->total_run_time += block->remaining_burst_time;
 
-		total_turnaround_time += (result.total_run_time - block->arrival);
+		total_turnaround_time += (result->total_run_time - block->arrival);
 	}
-	result.average_waiting_time = (total_waiting_time / size);
-	result.average_turnaround_time = (total_turnaround_time / size);
+	result->average_waiting_time = (total_waiting_time / size);
+	result->average_turnaround_time = (total_turnaround_time / size);
 
 	return true;
 }
