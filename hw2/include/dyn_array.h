@@ -2,14 +2,14 @@
 #define DYN_ARRAY_H
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
 typedef struct dyn_array dyn_array_t;
 // Next version, push/pop_N_back/front for bulk loading
@@ -17,21 +17,22 @@ typedef struct dyn_array dyn_array_t;
 // etc
 
 /*
-	Destructor notes!
+        Destructor notes!
 
-	This library accepts an optional destructor.
+        This library accepts an optional destructor.
 
-	Destructor settings are set at creation and cannot be changed afterwards.
+        Destructor settings are set at creation and cannot be changed
+   afterwards.
 
-	Your destructor should be a void function that accepts a single void pointer.
-	ex: void my_destructor(void *object_to_destruct)
+        Your destructor should be a void function that accepts a single void
+   pointer. ex: void my_destructor(void *object_to_destruct)
 
-	Passing NULL as the destructor pointer disables destruction.
+        Passing NULL as the destructor pointer disables destruction.
 
-	Destruction is triggered whenever an object is erased.
+        Destruction is triggered whenever an object is erased.
 
-	You can avoid destruction in a destruction-enabled dynamic array
-	  by using the extract family of functions.
+        You can avoid destruction in a destruction-enabled dynamic array
+          by using the extract family of functions.
 */
 
 ///
@@ -39,10 +40,13 @@ typedef struct dyn_array dyn_array_t;
 /// data_type_size-sized objects with optional destructor
 /// \param capacity Minimum capacity request (0 is fine if you have no opinion)
 /// \param data_type_size Size of the object type to be stored in bytes
-/// \param destruct_func Optional destructor to be applied on destruct operations (NULL to disable)
+/// \param destruct_func Optional destructor to be applied on destruct
+/// operations (NULL to disable)
 /// \return new dynamic array pointer, NULL on error
 ///
-dyn_array_t *dyn_array_create(const size_t capacity, const size_t data_type_size, void (*destruct_func)(void *));
+dyn_array_t *dyn_array_create(const size_t capacity,
+                              const size_t data_type_size,
+                              void (*destruct_func)(void *));
 
 ///
 /// Creates a new dynamic array from a given array
@@ -53,12 +57,14 @@ dyn_array_t *dyn_array_create(const size_t capacity, const size_t data_type_size
 /// \param destruct_func Optional destructor (NULL to disable)
 /// \return new dynamic array pointer, NULL on error
 ///
-dyn_array_t *dyn_array_import(const void *const data, const size_t count, const size_t data_type_size,
-							  void (*destruct_func)(void *));
+dyn_array_t *dyn_array_import(const void *const data, const size_t count,
+                              const size_t data_type_size,
+                              void (*destruct_func)(void *));
 
 ///
 /// Returns an internal pointer to the data array for export
-/// Since this pointer is internal, it may be invalidated by insertions that trigger reallocation
+/// Since this pointer is internal, it may be invalidated by insertions that
+/// trigger reallocation
 /// \param dyn_array The dynamic array to export
 /// \return Pointer to dynamic array contents, NULL on error
 ///
@@ -71,15 +77,13 @@ const void *dyn_array_export(const dyn_array_t *const dyn_array);
 ///
 void dyn_array_destroy(dyn_array_t *const dyn_array);
 
-
-
-
 // Prefer the X_back functions if you use a lot of push/pop operations
 // because, duh, it's an array and arrays don't handle front operations well
 
-// All insertions/extractions are via memcpy, so giving us pointers overlapping ourselves is UNDEFINED
-// The logic behind this is that you shouldn't be giving us an internal pointer that overlaps because that's weird
-// and guaranteeing the safety of something like that is not worth the effort
+// All insertions/extractions are via memcpy, so giving us pointers overlapping
+// ourselves is UNDEFINED The logic behind this is that you shouldn't be giving
+// us an internal pointer that overlaps because that's weird and guaranteeing
+// the safety of something like that is not worth the effort
 
 ///
 /// Returns a pointer to the object at the front of the array
@@ -89,31 +93,33 @@ void dyn_array_destroy(dyn_array_t *const dyn_array);
 void *dyn_array_front(const dyn_array_t *const dyn_array);
 
 ///
-/// Copies the given object and places it at the front of the array, increasing container size by one
+/// Copies the given object and places it at the front of the array, increasing
+/// container size by one
 /// \param dyn_array the dynamic array
 /// \param object the object to insert
 /// \return bool representing success of the operation
 ///
-bool dyn_array_push_front(dyn_array_t *const dyn_array, const void *const object);
+bool dyn_array_push_front(dyn_array_t *const dyn_array,
+                          const void *const object);
 
 ///
-/// Removes and optionally destructs the object at the front of the array, decreasing the container size by one
-/// Returns false only when array is empty or NULL was given
+/// Removes and optionally destructs the object at the front of the array,
+/// decreasing the container size by one Returns false only when array is empty
+/// or NULL was given
 /// \param dyn_array the dynamic array
 /// \return bool representing success of the operation
 ///
 bool dyn_array_pop_front(dyn_array_t *const dyn_array);
 
 ///
-/// Removes the object in the front of the array and places it in the desired location, decreasing container size
-/// Does not destruct since it was returned to the user
+/// Removes the object in the front of the array and places it in the desired
+/// location, decreasing container size Does not destruct since it was returned
+/// to the user
 /// \param dyn_array the dynamic array
 /// \param object destination for extracted object
 /// \return bool representing success of the operation
 ///
 bool dyn_array_extract_front(dyn_array_t *const dyn_array, void *const object);
-
-
 
 ///
 /// Returns a pointer to the object at the end of the array
@@ -123,12 +129,14 @@ bool dyn_array_extract_front(dyn_array_t *const dyn_array, void *const object);
 void *dyn_array_back(const dyn_array_t *const dyn_array);
 
 ///
-/// Copies the given object and places it at the back of the array, increasing container size by one
+/// Copies the given object and places it at the back of the array, increasing
+/// container size by one
 /// \param dyn_array the dynamic array
 /// \param object the object to insert
 /// \return bool representing success of the operation
 ///
-bool dyn_array_push_back(dyn_array_t *const dyn_array, const void *const object);
+bool dyn_array_push_back(dyn_array_t *const dyn_array,
+                         const void *const object);
 
 ///
 /// Removes and optionally destructs the object at the back of the array
@@ -138,14 +146,13 @@ bool dyn_array_push_back(dyn_array_t *const dyn_array, const void *const object)
 bool dyn_array_pop_back(dyn_array_t *const dyn_array);
 
 ///
-/// Removes the object in the back of the array and places it in the desired location
-/// Does not destruct since it was returned to the user
+/// Removes the object in the back of the array and places it in the desired
+/// location Does not destruct since it was returned to the user
 /// \param dyn_array the dynamic array
 /// \param object destination for extracted object
 /// \return bool representing success of the operation
 ///
 bool dyn_array_extract_back(dyn_array_t *const dyn_array, void *const object);
-
 
 ///
 /// Returns a pointer to the desired object in the array
@@ -157,14 +164,15 @@ bool dyn_array_extract_back(dyn_array_t *const dyn_array, void *const object);
 void *dyn_array_at(const dyn_array_t *const dyn_array, const size_t index);
 
 ///
-/// Inserts the given object at the given index in the array, increasing the container size by one
-/// and moving any contents at index and beyond down one
+/// Inserts the given object at the given index in the array, increasing the
+/// container size by one and moving any contents at index and beyond down one
 /// \param dyn_array the dynamic array
 /// \param index the position to insert the object at
 /// \param object the object to insert
 /// \return bool representing success of the operation
 ///
-bool dyn_array_insert(dyn_array_t *const dyn_array, const size_t index, const void *const object);
+bool dyn_array_insert(dyn_array_t *const dyn_array, const size_t index,
+                      const void *const object);
 
 ///
 /// Removes and optionally destructs the object at the given index
@@ -182,8 +190,8 @@ bool dyn_array_erase(dyn_array_t *const dyn_array, const size_t index);
 /// \param object destination for extracted object
 /// \return bool representing success of the operation
 ///
-bool dyn_array_extract(dyn_array_t *const dyn_array, const size_t index, void *const object);
-
+bool dyn_array_extract(dyn_array_t *const dyn_array, const size_t index,
+                       void *const object);
 
 ///
 /// Removes and optionally destructs all array elements
@@ -229,8 +237,8 @@ size_t dyn_array_data_size(const dyn_array_t *const dyn_array);
 /// \param compare the comparison function
 /// \return bool representing success of the operation
 ///
-bool dyn_array_sort(dyn_array_t *const dyn_array, int (*const compare)(const void *, const void *));
-
+bool dyn_array_sort(dyn_array_t *const dyn_array,
+                    int (*const compare)(const void *, const void *));
 
 ///
 /// Inserts the given object into the correct sorted position
@@ -242,21 +250,24 @@ bool dyn_array_sort(dyn_array_t *const dyn_array, int (*const compare)(const voi
 /// \param compare the comparison function
 /// \return bool representing success of the operation
 ///
-bool dyn_array_insert_sorted(dyn_array_t *const dyn_array, const void *const object,
-							 int (*const compare)(const void *const, const void *const));
-
+bool dyn_array_insert_sorted(dyn_array_t *const dyn_array,
+                             const void *const object,
+                             int (*const compare)(const void *const,
+                                                  const void *const));
 
 ///
 /// Applies the given function to every object in the array
 /// \param dyn_array the dynamic array
 /// \param func the function to apply
 /// \param arg argument that will be passed to the function (as parameter 2)
-/// \return bool representing success of operation (really just pointer and size checks)
+/// \return bool representing success of operation (really just pointer and size
+/// checks)
 ///
-bool dyn_array_for_each(dyn_array_t *const dyn_array, void (*const func)(void *const, void *), void *arg);
+bool dyn_array_for_each(dyn_array_t *const dyn_array,
+                        void (*const func)(void *const, void *), void *arg);
 
 #ifdef __cplusplus
-  }
+}
 #endif
 
 #endif

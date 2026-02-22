@@ -1,12 +1,11 @@
-#include <fcntl.h>
-#include <stdio.h>
-#include <pthread.h>
-#include "gtest/gtest.h"
 #include "../include/processing_scheduling.h"
+#include "gtest/gtest.h"
+#include <fcntl.h>
+#include <pthread.h>
+#include <stdio.h>
 
 // Using a C library requires extern "C" to prevent function mangling
-extern "C"
-{
+extern "C" {
 #include <dyn_array.h>
 }
 
@@ -19,26 +18,25 @@ unsigned int total;
 
 class GradeEnvironment : public testing::Environment
 {
-	public:
-		virtual void SetUp()
-		{
-			score = 0;
-			total = 210;
-		}
+  public:
+    virtual void SetUp()
+    {
+      score = 0;
+      total = 210;
+    }
 
-		virtual void TearDown()
-		{
-			::testing::Test::RecordProperty("points_given", score);
-			::testing::Test::RecordProperty("points_total", total);
-			std::cout << "SCORE: " << score << '/' << total << std::endl;
-		}
+    virtual void TearDown()
+    {
+      ::testing::Test::RecordProperty("points_given", score);
+      ::testing::Test::RecordProperty("points_total", total);
+      std::cout << "SCORE: " << score << '/' << total <<
+std::endl;
+    }
 };
 */
 
-
-int main(int argc, char **argv)
-{
-	::testing::InitGoogleTest(&argc, argv);
-	// ::testing::AddGlobalTestEnvironment(new GradeEnvironment);
-	return RUN_ALL_TESTS();
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  // ::testing::AddGlobalTestEnvironment(new GradeEnvironment);
+  return RUN_ALL_TESTS();
 }
