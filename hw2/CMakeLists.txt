@@ -29,7 +29,7 @@ add_executable(analysis src/analysis.c)
 target_link_libraries(analysis dyn_array)
 
 # Compile the tester executable
-add_executable(${PROJECT_NAME}_test test/tests.cpp src/process_scheduling.c)
+add_executable(${PROJECT_NAME}_test test/tests.cpp)
 
 target_compile_definitions(${PROJECT_NAME}_test PRIVATE)
 
