@@ -11,3 +11,10 @@ You can manually copy the time analysis from console and paste it to this file, 
 ---------------------------------------------------------------------------
 Add your scheduling algorithm analysis below this line in a readable format.
 ---------------------------------------------------------------------------
+
+[benjaminsmith@icr-clymene build]$ ./analysis ../pcb.bin FCFS
+Average Waiting Time:    16.00
+Average Turnaround Time: 28.50
+Total Clock Time:        50
+
+

@@ -26,7 +26,7 @@ add_library(process_scheduling src/process_scheduling.c)
 add_executable(analysis src/analysis.c)
 
 # link the dyn_array library we compiled against our analysis executable
-target_link_libraries(analysis dyn_array)
+target_link_libraries(analysis process_scheduling dyn_array)
 
 # Compile the tester executable
 add_executable(${PROJECT_NAME}_test test/tests.cpp)

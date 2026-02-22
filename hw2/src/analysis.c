@@ -10,8 +10,10 @@
 #define SJF "SJF"
 #define SRT "SRT"
 
-// Add and comment your analysis code in this function.
-// THIS IS NOT FINISHED.
+/// @brief This program test the average wait, turnaround, and clock time
+/// @param argc 
+/// @param argv 
+/// @return 
 int main(int argc, char **argv) 
 {
   //check if the right number of arguments were pashed
@@ -25,7 +27,7 @@ int main(int argc, char **argv)
   char *filename = argv[1];
   //read in the algorithm 
   char *algorithm = argv[2];
-
+  //quantum not needed for only FCFS
 
   //Load ready queue
   dyn_array_t *ready_queue = load_process_control_blocks(filename);
