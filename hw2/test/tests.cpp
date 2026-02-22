@@ -1,4 +1,3 @@
-#include "../include/processing_scheduling.h"
 #include "gtest/gtest.h"
 #include <fcntl.h>
 #include <pthread.h>
@@ -7,6 +6,7 @@
 // Using a C library requires extern "C" to prevent function mangling
 extern "C" {
 #include <dyn_array.h>
+#include <process_scheduling.h>
 }
 
 #define NUM_PCB 30

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "dyn_array.h"
-#include "processing_scheduling.h"
+#include "process_scheduling.h"
 
 #define FCFS "FCFS"
 #define P "P"
