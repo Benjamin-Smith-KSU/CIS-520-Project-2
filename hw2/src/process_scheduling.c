@@ -32,8 +32,7 @@ int fcfs_compare(const void *x, const void *y) {
 	return res;
 }
 
-bool first_come_first_serve(dyn_array_t *ready_queue,
-                            ScheduleResult_t *result) 
+bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
 	if (ready_queue == NULL || result == NULL) return false;
 	if (dyn_array_empty(ready_queue) || dyn_array_data_size(ready_queue) == 0 || dyn_array_capacity(ready_queue) == 0) return false;
