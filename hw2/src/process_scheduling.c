@@ -146,14 +146,14 @@ dyn_array_t *load_process_control_blocks(const char *input_file) {
   return pcbs;
 }
 
-void pretty_print_pcb(ProcessControlBlock_t pcb) {
+/*void pretty_print_pcb(ProcessControlBlock_t pcb) {
   printf("struct ProcessControlBlock_t {\n");
   printf("\tuint32_t remaining_burst_time: %d\n", pcb.remaining_burst_time);
   printf("\tuint32_t priority: %d\n", pcb.priority);
   printf("\tuint32_t arrival: %d\n", pcb.arrival);
   printf("\tbool started: %b\n", pcb.started);
   printf("}\n");
-}
+}*/
 
 bool shortest_remaining_time_first(dyn_array_t *ready_queue,
                                    ScheduleResult_t *result) {
