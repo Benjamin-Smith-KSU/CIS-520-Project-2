@@ -94,6 +94,22 @@ TEST(fcfs, GoodParams){
 
 }
 
+TEST(fcfs, SinglePCB){
+
+}
+
+TEST(fcfs, MultipleProcessesSameArrival){
+
+}
+
+TEST(fcfs, CPUIdle){
+
+}
+
+TEST(fcfs, ZeroBurstTime){
+        
+}
+
 
 /*
 unsigned int score;
