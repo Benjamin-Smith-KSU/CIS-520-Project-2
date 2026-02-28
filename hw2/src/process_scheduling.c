@@ -17,14 +17,14 @@ void virtual_cpu(ProcessControlBlock_t *process_control_block) {
 }
 
 // static variable for fcfs compare
-static dyn_array_t * fcfs_queue = NULL;
+static dyn_array_t * static_queue = NULL;
 
-// comapre function for fcfs, sorts indicies based on the value of that index in fcfs_queue to avoid sorting the queue in place
-int fcfs_compare(const void *x, const void *y) {
+// comapre function for fcfs, sorts indicies based on the value of that index in static_queue to avoid sorting the queue in place
+int sortByArrivalTimeCompare(const void *x, const void *y) {
 	size_t i = *(size_t*)x;
 	size_t j = *(size_t*)y;
-	ProcessControlBlock_t* block_x = (ProcessControlBlock_t*)dyn_array_at(fcfs_queue, i);
-	ProcessControlBlock_t* block_y = (ProcessControlBlock_t*)dyn_array_at(fcfs_queue, j);
+	ProcessControlBlock_t* block_x = (ProcessControlBlock_t*)dyn_array_at(static_queue, i);
+	ProcessControlBlock_t* block_y = (ProcessControlBlock_t*)dyn_array_at(static_queue, j);
 	int arrival_x = (int)block_x->arrival;
 	int arrival_y = (int)block_y->arrival;
 	int res = arrival_x - arrival_y;
@@ -47,9 +47,9 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
 		ind[i] = i;
 	}
 
-	fcfs_queue = ready_queue;
-	qsort(ind, size, sizeof(size_t), fcfs_compare);
-	fcfs_queue = NULL;
+	static_queue = ready_queue;
+	qsort(ind, size, sizeof(size_t), sortByArrivalTimeCompare);
+	static_queue = NULL;
 
 	for (size_t i = 0; i < size; i++) {
 
@@ -69,10 +69,65 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
 	return true;
 }
 
-bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result) {
-  UNUSED(ready_queue);
-  UNUSED(result);
-  return false;
+bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result) { // non preemptive
+  
+	if (ready_queue == NULL || result == NULL) return false;
+	if (dyn_array_empty(ready_queue) || dyn_array_data_size(ready_queue) == 0 || dyn_array_capacity(ready_queue) == 0) return false;
+
+	float total_waiting_time = 0;
+	float total_turnaround_time = 0;
+	result->total_run_time = 0;
+	const size_t size = dyn_array_size(ready_queue);
+  size_t jobs_ran = 0;
+
+	size_t ind[size];
+	for (size_t i = 0; i < size; i++) {
+		ind[i] = i;
+	}
+
+	static_queue = ready_queue;
+	qsort(ind, size, sizeof(size_t), sortByArrivalTimeCompare);
+	static_queue = NULL;
+
+	while (jobs_ran < size){
+    ssize_t lowest_burst_time_index = -1;
+    uint32_t lowest_burst_time = 0xFFFFFFFF;
+
+    for (size_t i = 0; i < size; i++){
+      ProcessControlBlock_t* block = dyn_array_at(ready_queue, ind[i]);
+      if (block == NULL) return false;
+
+      if (block->started == false && block->arrival <= result->total_run_time && block->remaining_burst_time < lowest_burst_time) {
+        lowest_burst_time_index = i; 
+        lowest_burst_time = block->remaining_burst_time;
+      }
+    }
+
+    if (lowest_burst_time_index == -1) {
+      uint32_t earliest_arrival = 0xFFFFFFFF;
+      for (size_t i = 0; i < size; i++){
+        ProcessControlBlock_t* process = dyn_array_at(ready_queue, ind[i]);
+        if (!process->started && process->arrival < earliest_arrival) earliest_arrival = process->arrival;
+      }
+      result->total_run_time = earliest_arrival;
+      continue;
+    }
+
+    ProcessControlBlock_t* block = dyn_array_at(ready_queue, ind[lowest_burst_time_index]);
+
+    total_waiting_time += (result->total_run_time - block->arrival);
+
+		result->total_run_time += block->remaining_burst_time;
+
+		total_turnaround_time += (result->total_run_time - block->arrival);
+
+    block->started = true;
+    jobs_ran++;
+  }
+	result->average_waiting_time = (total_waiting_time / size);
+	result->average_turnaround_time = (total_turnaround_time / size);
+
+	return true;
 }
 
 bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result) {
