@@ -17,4 +17,9 @@ Average Waiting Time:    16.00
 Average Turnaround Time: 28.50
 Total Clock Time:        50
 
+[benjaminsmith@icr-clymene build]$  ./analysis ../pcb.bin RR 4
+Average Waiting Time:    24.00
+Average Turnaround Time: 36.50
+Total Clock Time:        50
+
 

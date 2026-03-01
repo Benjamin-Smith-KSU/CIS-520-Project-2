@@ -47,6 +47,38 @@ int sortByArrivalTimeCompare(const void *x, const void *y) {
   return res;
 }
 
+/// @brief This is a functions for Round Robin to compair arrival times for
+/// qsort
+/// @param a PCB 1
+/// @param b PCB 2
+/// @return 1 if (a > b), -1 if (a < b) 0 if (a == b)
+int comparePCBsByArrival(const void *a, const void *b) {
+  ProcessControlBlock_t *pcb_a = (ProcessControlBlock_t *)a;
+  ProcessControlBlock_t *pcb_b = (ProcessControlBlock_t *)b;
+
+  if (pcb_a->arrival < pcb_b->arrival)
+    return -1;
+  if (pcb_a->arrival > pcb_b->arrival)
+    return 1;
+  return 0;
+}
+
+/// @brief This is a functions for Round Robin to compair arrival times for
+/// qsort
+/// @param a PCB 1
+/// @param b PCB 2
+/// @return 1 if (a > b), -1 if (a < b) 0 if (a == b)
+int comparePCBsByArrival(const void *a, const void *b) {
+  ProcessControlBlock_t *pcb_a = (ProcessControlBlock_t *)a;
+  ProcessControlBlock_t *pcb_b = (ProcessControlBlock_t *)b;
+
+  if (pcb_a->arrival < pcb_b->arrival)
+    return -1;
+  if (pcb_a->arrival > pcb_b->arrival)
+    return 1;
+  return 0;
+}
+
 bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result) {
   // param error checks
   if (ready_queue == NULL || result == NULL)
@@ -263,28 +295,18 @@ bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *r
   return true;
 }
 
-void pretty_print_pcb(ProcessControlBlock_t pcb) {
-  printf("struct ProcessControlBlock_t {\n");
-  printf("\tuint32_t remaining_burst_time: %d\n", pcb.remaining_burst_time);
-  printf("\tuint32_t priority: %d\n", pcb.priority);
-  printf("\tuint32_t arrival: %d\n", pcb.arrival);
-  if (pcb.started) {
-    printf("\tbool started: true\n");
-  } else {
-    printf("\tbool started: false\n");
-  }
-  printf("}\n");
-}
-
-// Compares two PCBs, first by earliest arrival time, but for equal arrival
-// times we compare by highest priority (smallest integer ≡ highest priority)
-//
-// compare_priority(a, b) < 0 <=> a->arrival > b->arrival
-//                                  or a->priority > b->priority
-// compare_priority(a, b) = 0 <=> a->arrival = b->arrival
-//                                  and a->priority = b->priority
-// compare_priority(a, b) > 0 <=> a->arrival < b->arrival
-//                                  or a->priority < b->priority
+/// @brief Compares two PCBs, first by earliest arrival time, but for equal
+/// arrival times we compare by highest priority
+/// (smallest integer ≡ highest priority)
+/// @param a LHS PCB to compare
+/// @param b RHS PCB to compare
+/// @return
+///     compare_priority(a, b) < 0 <=> a->arrival > b->arrival
+///                                      or a->priority > b->priority
+///     compare_priority(a, b) = 0 <=> a->arrival = b->arrival
+///                                      and a->priority = b->priority
+///     compare_priority(a, b) > 0 <=> a->arrival < b->arrival
+///                                      or a->priority < b->priority
 int compare_by_arrival_and_priority(const void *a, const void *b) {
   assert(a != NULL);
   assert(b != NULL);
@@ -293,8 +315,11 @@ int compare_by_arrival_and_priority(const void *a, const void *b) {
          ((ProcessControlBlock_t *)a)->priority;
 }
 
-// The CPU is allocated to the process with the highest priority
-// (smallest integer ≡ highest priority)
+/// @brief Virtual priority scheduler: the CPU is allocated to the process with
+/// the highest priority (smallest integer ≡ highest priority)
+/// @param ready_queue A list of PCBs that are ready to be executed
+/// @param result An output parameter for returning performance metrics
+/// @return true on success. false on failure.
 bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result) {
   if (NULL == ready_queue || NULL == result) {
     return false;
@@ -400,10 +425,128 @@ bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result) {
 
 bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result,
                  size_t quantum) {
-  UNUSED(ready_queue);
-  UNUSED(result);
-  UNUSED(quantum);
-  return false;
+  // validate Parameters
+  if (ready_queue == NULL || result == NULL || quantum == 0) {
+    // Input parameter were not valid
+    return false;
+  }
+
+  // find how many processes we need to do
+  const size_t total_processes = dyn_array_size(ready_queue);
+  if (0 == total_processes) {
+    // invalid process size
+    return false;
+  }
+
+  // sort by arival time
+  static_queue = ready_queue;
+  qsort((void *)dyn_array_export(ready_queue), total_processes,
+        sizeof(ProcessControlBlock_t), comparePCBsByArrival);
+  static_queue = NULL;
+
+  // create the work queue
+  dyn_array_t *work_queue =
+      dyn_array_create(0, sizeof(ProcessControlBlock_t *), NULL);
+
+  // save burst times to array
+  uint32_t *burst_cache =
+      (uint32_t *)malloc(sizeof(uint32_t) * total_processes);
+  for (size_t i = 0; i < total_processes; i++) {
+    ProcessControlBlock_t *pcb =
+        (ProcessControlBlock_t *)dyn_array_at(ready_queue, i);
+    burst_cache[i] = pcb->remaining_burst_time;
+  }
+
+  // variables for tracking processes
+  uint32_t current_time = 0;
+  uint32_t total_waiting_time = 0;
+  uint32_t total_turnaround_time = 0;
+  size_t completed_processes = 0;
+  size_t next_arrival_index = 0;
+
+  // main loop
+  while (completed_processes < total_processes) {
+    // add any process that arrived at current time to the work queue
+    while (next_arrival_index < total_processes) {
+      ProcessControlBlock_t *pcb = (ProcessControlBlock_t *)dyn_array_at(
+          ready_queue, next_arrival_index);
+      if (pcb->arrival <= current_time) {
+        dyn_array_push_back(work_queue, &pcb);
+        next_arrival_index++;
+      } else {
+        break;
+      }
+    }
+
+    // if work queue is empty move to next arrival
+    if (dyn_array_empty(work_queue)) {
+      current_time = ((ProcessControlBlock_t *)dyn_array_at(ready_queue,
+                                                            next_arrival_index))
+                         ->arrival;
+      continue;
+    }
+
+    // pop the next process from the front of the work queue
+    ProcessControlBlock_t *current_pcb;
+    dyn_array_extract_front(work_queue, &current_pcb);
+
+    // find out how long to run the process
+    uint32_t time_to_run;
+    // if time remaining is less than quantum
+    if (current_pcb->remaining_burst_time < quantum) {
+      // finish out the process
+      time_to_run = current_pcb->remaining_burst_time;
+    } else {
+      // else work on the process for quantum
+      time_to_run = quantum;
+    }
+
+    //"Run" the process
+    current_time += time_to_run;
+    current_pcb->remaining_burst_time -= time_to_run;
+
+    // Check for arrivals DURING the time slice before re-adding the current
+    // process
+    while (next_arrival_index < total_processes) {
+      ProcessControlBlock_t *pcb = (ProcessControlBlock_t *)dyn_array_at(
+          ready_queue, next_arrival_index);
+      if (pcb->arrival <= current_time) {
+        dyn_array_push_back(work_queue, &pcb);
+        next_arrival_index++;
+      } else {
+        break;
+      }
+    }
+
+    // re-add the current process if there is time left
+    if (current_pcb->remaining_burst_time > 0) {
+      dyn_array_push_back(work_queue, &current_pcb);
+    } else {
+      // process is finnished, now calc stats
+      completed_processes++;
+      uint32_t turnaround = current_time - current_pcb->arrival;
+      total_turnaround_time += turnaround;
+
+      // look through the burst_cache array to calc wait time
+      for (size_t i = 0; i < total_processes; i++) {
+        if (dyn_array_at(ready_queue, i) == current_pcb) {
+          total_waiting_time += (turnaround - burst_cache[i]);
+          break;
+        }
+      }
+    }
+
+  } // end of main while loop
+
+  // save results
+  result->average_waiting_time = (float)total_waiting_time / total_processes;
+  result->average_turnaround_time =
+      (float)total_turnaround_time / total_processes;
+  result->total_run_time = current_time;
+
+  free(burst_cache);
+  dyn_array_destroy(work_queue);
+  return true;
 }
 
 dyn_array_t *load_process_control_blocks(const char *input_file) {

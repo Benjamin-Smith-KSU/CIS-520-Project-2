@@ -465,3 +465,123 @@ TEST(priority, TwoPCBsSwitchingExecution) {
   ASSERT_EQ((3.f + 5.f) / 2.f, result.average_turnaround_time);
   ASSERT_EQ(6UL, result.total_run_time);
 }
+
+
+
+TEST(RoundRobin, BadParam_NullPointers) 
+{
+    ScheduleResult_t res;
+    // Test 1: NULL ready_queue
+    // The function should detect the NULL and return false immediately.
+    EXPECT_FALSE(round_robin(NULL, &res, 4));
+
+    // Test 2: NULL result struct
+    dyn_array_t* dq = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    EXPECT_FALSE(round_robin(dq, NULL, 4));
+    
+    dyn_array_destroy(dq);
+}
+
+TEST(RoundRobin, BadParam_ZeroQuantum) {
+    dyn_array_t* dq = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    ProcessControlBlock_t p1 = {5, 1, 0, false};
+    dyn_array_push_back(dq, &p1);
+
+    ScheduleResult_t res;
+    // A quantum of 0 would cause an infinite loop or division by zero.
+    // Your code should catch this and return false.
+    EXPECT_FALSE(round_robin(dq, &res, 0));
+
+    dyn_array_destroy(dq);
+}
+
+TEST(RoundRobin, GoodParam_SingleProcess) {
+    dyn_array_t* dq = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    
+    // Process: Burst 10, Arrival 0
+    ProcessControlBlock_t p1 = {10, 1, 0, false};
+    dyn_array_push_back(dq, &p1);
+
+    ScheduleResult_t res;
+    size_t quantum = 2; // Quantum doesn't matter for 1 process, it will just cycle.
+
+    bool success = round_robin(dq, &res, quantum);
+
+    ASSERT_TRUE(success);
+    // For a single process:
+    // Wait time must be 0 (it arrived and started immediately).
+    EXPECT_FLOAT_EQ(res.average_waiting_time, 0.0f);
+    // Turnaround time must equal burst time (10 - 0 = 10).
+    EXPECT_FLOAT_EQ(res.average_turnaround_time, 10.0f);
+    // Total clock time must be 10.
+    EXPECT_EQ(res.total_run_time, (uint32_t)10);
+
+    dyn_array_destroy(dq);
+}
+
+TEST(RoundRobin, BasicPreemption) 
+{
+    dyn_array_t* dq = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    
+    // Process 1: Burst 6, Arrival 0
+    ProcessControlBlock_t p1 = {6, 0, 0, false}; 
+    // Process 2: Burst 2, Arrival 0
+    ProcessControlBlock_t p2 = {2, 0, 0, false};
+    
+    dyn_array_push_back(dq, &p1);
+    dyn_array_push_back(dq, &p2);
+
+    ScheduleResult_t res;
+    size_t quantum = 4;
+    
+    // Logic: 
+    // Time 0-4: P1 runs (2 left). 
+    // Time 4-6: P2 runs (0 left) -> P2 Finishes.
+    // Time 6-8: P1 runs (0 left) -> P1 Finishes.
+    
+    bool success = round_robin(dq, &res, quantum);
+
+    ASSERT_TRUE(success);
+    EXPECT_EQ(res.total_run_time, (uint32_t)8);
+    // P2 waited 4 units. P1 waited 2 units (the time P2 was running).
+    // Total wait = 6. Avg = 3.0
+    EXPECT_FLOAT_EQ(res.average_waiting_time, 3.0f);
+    // P2 turnaround = 6. P1 turnaround = 8.
+    // Total TA = 14. Avg = 7.0
+    EXPECT_FLOAT_EQ(res.average_turnaround_time, 7.0f);
+    
+    dyn_array_destroy(dq);
+}
+
+TEST(RoundRobin, StaggeredArrival) 
+{
+    dyn_array_t* dq = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    
+    // Process 1: Burst 5, Arrival 0
+    ProcessControlBlock_t p1 = {5, 0, 0, false}; 
+    // Process 2: Burst 3, Arrival 2 (Arrives while P1 is running)
+    ProcessControlBlock_t p2 = {3, 0, 2, false};
+    
+    dyn_array_push_back(dq, &p1);
+    dyn_array_push_back(dq, &p2);
+
+    ScheduleResult_t res;
+    size_t quantum = 3;
+    
+    // Timeline:
+    // 0-3: P1 runs (2 left). P2 arrives at T=2.
+    // 3-6: P2 runs (0 left). P2 finishes.
+    // 6-8: P1 runs (2 left). P1 finishes.
+    
+    bool success = round_robin(dq, &res, quantum);
+
+    ASSERT_TRUE(success);
+    EXPECT_EQ(res.total_run_time, (uint32_t)8);
+    
+    // P1 wait: spent 3 units in queue while P2 ran.
+    // P2 wait: arrived at 2, started at 3. (1 unit).
+    // Avg Wait: (3 + 1) / 2 = 2.0
+    EXPECT_FLOAT_EQ(res.average_waiting_time, 2.0f);
+    
+    dyn_array_destroy(dq);
+}
