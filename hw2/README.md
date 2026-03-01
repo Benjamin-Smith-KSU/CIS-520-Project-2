@@ -21,5 +21,5 @@ Total Clock Time:        50
 Average Waiting Time:    24.00
 Average Turnaround Time: 36.50
 Total Clock Time:        50
-[benjaminsmith@icr-clymene build]$
+
 
