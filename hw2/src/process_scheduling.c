@@ -165,28 +165,18 @@ bool shortest_job_first(dyn_array_t *ready_queue,
   return true;
 }
 
-void pretty_print_pcb(ProcessControlBlock_t pcb) {
-  printf("struct ProcessControlBlock_t {\n");
-  printf("\tuint32_t remaining_burst_time: %d\n", pcb.remaining_burst_time);
-  printf("\tuint32_t priority: %d\n", pcb.priority);
-  printf("\tuint32_t arrival: %d\n", pcb.arrival);
-  if (pcb.started) {
-    printf("\tbool started: true\n");
-  } else {
-    printf("\tbool started: false\n");
-  }
-  printf("}\n");
-}
-
-// Compares two PCBs, first by earliest arrival time, but for equal arrival
-// times we compare by highest priority (smallest integer ≡ highest priority)
-//
-// compare_priority(a, b) < 0 <=> a->arrival > b->arrival
-//                                  or a->priority > b->priority
-// compare_priority(a, b) = 0 <=> a->arrival = b->arrival
-//                                  and a->priority = b->priority
-// compare_priority(a, b) > 0 <=> a->arrival < b->arrival
-//                                  or a->priority < b->priority
+/// @brief Compares two PCBs, first by earliest arrival time, but for equal
+/// arrival times we compare by highest priority
+/// (smallest integer ≡ highest priority)
+/// @param a LHS PCB to compare
+/// @param b RHS PCB to compare
+/// @return
+///     compare_priority(a, b) < 0 <=> a->arrival > b->arrival
+///                                      or a->priority > b->priority
+///     compare_priority(a, b) = 0 <=> a->arrival = b->arrival
+///                                      and a->priority = b->priority
+///     compare_priority(a, b) > 0 <=> a->arrival < b->arrival
+///                                      or a->priority < b->priority
 int compare_by_arrival_and_priority(const void *a, const void *b) {
   assert(a != NULL);
   assert(b != NULL);
@@ -195,8 +185,11 @@ int compare_by_arrival_and_priority(const void *a, const void *b) {
          ((ProcessControlBlock_t *)a)->priority;
 }
 
-// The CPU is allocated to the process with the highest priority
-// (smallest integer ≡ highest priority)
+/// @brief Virtual priority scheduler: the CPU is allocated to the process with
+/// the highest priority (smallest integer ≡ highest priority)
+/// @param ready_queue A list of PCBs that are ready to be executed
+/// @param result An output parameter for returning performance metrics
+/// @return true on success. false on failure.
 bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result) {
   if (NULL == ready_queue || NULL == result) {
     return false;
