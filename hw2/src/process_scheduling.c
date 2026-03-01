@@ -63,22 +63,6 @@ int comparePCBsByArrival(const void *a, const void *b) {
   return 0;
 }
 
-/// @brief This is a functions for Round Robin to compair arrival times for
-/// qsort
-/// @param a PCB 1
-/// @param b PCB 2
-/// @return 1 if (a > b), -1 if (a < b) 0 if (a == b)
-int comparePCBsByArrival(const void *a, const void *b) {
-  ProcessControlBlock_t *pcb_a = (ProcessControlBlock_t *)a;
-  ProcessControlBlock_t *pcb_b = (ProcessControlBlock_t *)b;
-
-  if (pcb_a->arrival < pcb_b->arrival)
-    return -1;
-  if (pcb_a->arrival > pcb_b->arrival)
-    return 1;
-  return 0;
-}
-
 bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result) {
   // param error checks
   if (ready_queue == NULL || result == NULL)
