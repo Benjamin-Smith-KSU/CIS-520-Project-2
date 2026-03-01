@@ -244,3 +244,59 @@ TEST(load_pcbs, NonexistentFile) {
   dyn_array_t *pcbs = load_process_control_blocks("this-file-should-not-exist");
   ASSERT_EQ(NULL, pcbs);
 }
+
+TEST(priority, OnePCB) {
+  dyn_array_t *ready_queue = dyn_array_create(2, sizeof(ProcessControlBlock_t), NULL);
+  ScheduleResult_t result;
+  ProcessControlBlock_t pcb;
+
+  pcb.remaining_burst_time = 3;
+  pcb.priority = 0;
+  pcb.arrival = 2;
+  pcb.started = false;
+  dyn_array_insert(ready_queue, 0, &pcb);
+
+  priority(ready_queue, &result);
+
+  ASSERT_EQ(0.f, result.average_waiting_time);
+  ASSERT_EQ(3.f, result.average_turnaround_time);
+  ASSERT_EQ(5UL, result.total_run_time);
+}
+
+// This test test the scenario where a higher priority process arrives later
+// than a lower priority process, and the scheduler needs to change which
+// process is currently being executed.
+TEST(priority, TwoPCBsSwitchingExecution) {
+  dyn_array_t *ready_queue = dyn_array_create(2, sizeof(ProcessControlBlock_t), NULL);
+  ScheduleResult_t result;
+  ProcessControlBlock_t pcb;
+
+  // This process, A, has higher priority but it arrives after the process B
+  pcb.remaining_burst_time = 3;
+  pcb.priority = 0;
+  pcb.arrival = 2;
+  pcb.started = false;
+  dyn_array_insert(ready_queue, 0, &pcb);
+
+  // This process, B, has lower priority but it arrives before the process A
+  pcb.remaining_burst_time = 2;
+  pcb.priority = 1;
+  pcb.arrival = 1;
+  pcb.started = false;
+  dyn_array_insert(ready_queue, 0, &pcb);
+
+  priority(ready_queue, &result);
+
+  // The line below shows which process is being execute during each time slice.
+  // '_' is used to show that neither A nor B is executing during time = 0.
+  // _BAAAB
+
+  // A has a waiting time of 3-3 = 0
+  // B has a waiting time of 5-2 = 3
+  // A has a turnaround time of 3-0 = 3
+  // B has a turnaround time of 6-1 = 5
+
+  ASSERT_EQ((0.f + 3.f) / 2.f, result.average_waiting_time);
+  ASSERT_EQ((3.f + 5.f) / 2.f, result.average_turnaround_time);
+  ASSERT_EQ(6UL, result.total_run_time);
+}
