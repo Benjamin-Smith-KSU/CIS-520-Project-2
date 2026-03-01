@@ -13,7 +13,7 @@
 /// @brief This program test the average wait, turnaround, and clock time
 /// @param argc Number of arguments
 /// @param argv The arguments
-/// @return
+/// @return exit status
 int main(int argc, char **argv) {
   // Check if the right number of arguments were provided
   if (argc < 3) {
