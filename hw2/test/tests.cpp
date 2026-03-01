@@ -27,9 +27,9 @@ TEST(fcfs, BadParams){
 
         queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
         res = first_come_first_serve(NULL, result);
-        ASSERT_EQ(false, res);
+        ASSERT_EQ(false, res); // ready_queue == NULL
         res = first_come_first_serve(queue, NULL);
-        ASSERT_EQ(false, res);
+        ASSERT_EQ(false, res); // result == NULL
 
         res = first_come_first_serve(queue, result);
         ASSERT_EQ(false, res); // count == 0
@@ -98,6 +98,7 @@ TEST(fcfs, SinglePCB){
         ScheduleResult_t * result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
         dyn_array_t * queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
 
+        // set up pcb
         ProcessControlBlock_t block;
         block.remaining_burst_time = 2;
         block.priority = 0;
@@ -163,6 +164,7 @@ TEST(fcfs, ZeroBurstTime){
         ScheduleResult_t * result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
         dyn_array_t * queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
 
+        // set up pcb
         ProcessControlBlock_t block;
         block.remaining_burst_time = 0;
         block.priority = 0;
@@ -195,9 +197,9 @@ TEST(sjf, BadParams){
 
         queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
         res = shortest_job_first(NULL, result);
-        ASSERT_EQ(false, res);
+        ASSERT_EQ(false, res); // ready_queue == NULL
         res = shortest_job_first(queue, NULL);
-        ASSERT_EQ(false, res);
+        ASSERT_EQ(false, res); // result == NULL
 
         res = shortest_job_first(queue, result);
         ASSERT_EQ(false, res); // count == 0
@@ -210,8 +212,9 @@ TEST(sjf, GoodParams){
         ScheduleResult_t * result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
         dyn_array_t * queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
 
+        // testing large burst at start
         uint32_t bursts[10]  = {20, 1, 1, 2, 2, 3, 3, 4, 4, 5};
-        uint32_t arrivals[10]= {0,  1, 2, 3, 4, 5, 6, 7, 8, 9};
+        uint32_t arrivals[10]= {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
         for(size_t i = 0; i < 10; i++){
                 ProcessControlBlock_t block;
@@ -278,9 +281,9 @@ TEST(srtf, BadParams) {
 
         queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
         res = shortest_remaining_time_first(NULL, result);
-        ASSERT_EQ(false, res);
+        ASSERT_EQ(false, res); // ready_queue == NULL
         res = shortest_remaining_time_first(queue, NULL);
-        ASSERT_EQ(false, res);
+        ASSERT_EQ(false, res); // result == NULL
 
         res = shortest_remaining_time_first(queue, result);
         ASSERT_EQ(false, res); // count == 0
@@ -293,8 +296,9 @@ TEST(srtf, GoodParams) {
         ScheduleResult_t * result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
         dyn_array_t * queue = dyn_array_create(NUM_PCB, sizeof(ProcessControlBlock_t), NULL);
 
+        // testing large burst at start
         uint32_t bursts[10]  = {20, 1, 1, 2, 2, 3, 3, 4, 4, 5};
-        uint32_t arrivals[10]= {0,  1, 2, 3, 4, 5, 6, 7, 8, 9};
+        uint32_t arrivals[10]= {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
         for(size_t i = 0; i < 10; i++){
                 ProcessControlBlock_t block;
